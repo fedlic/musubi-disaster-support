@@ -11,7 +11,7 @@ import { useEffect, useRef } from "react";
 
 export type SupportPoint = {
   id: string;
-  kind: "request" | "x";
+  kind: "request" | "x" | "official";
   title: string;
   area: string;
   detail: string;
@@ -41,8 +41,8 @@ export default function MapPanel({ points, selectedId, onSelect }: Props) {
     if (!containerRef.current || mapRef.current) return;
     mapRef.current = new MapLibreMap({
       container: containerRef.current,
-      center: [139.7575, 35.6798],
-      zoom: 13.6,
+      center: [130.7079, 32.8031],
+      zoom: 9.2,
       attributionControl: false,
       style: {
         version: 8,
@@ -70,9 +70,9 @@ export default function MapPanel({ points, selectedId, onSelect }: Props) {
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = points.map((point) => {
       const element = document.createElement("button");
-      element.className = `map-marker marker-${point.kind === "x" ? "x" : point.priority} ${selectedId === point.id ? "active" : ""}`;
+      element.className = `map-marker marker-${point.kind === "x" ? "x" : point.kind === "official" ? "公式" : point.priority} ${selectedId === point.id ? "active" : ""}`;
       element.setAttribute("aria-label", `${point.priority}: ${point.title}`);
-      element.innerHTML = `<span>${point.kind === "x" ? "X" : point.priority === "緊急" ? "!" : "●"}</span>`;
+      element.innerHTML = `<span>${point.kind === "x" ? "X" : point.kind === "official" ? "公" : point.priority === "緊急" ? "!" : "●"}</span>`;
       element.addEventListener("click", () => onSelect(point.id));
       return new Marker({ element }).setLngLat([point.lng, point.lat]).addTo(mapRef.current!);
     });

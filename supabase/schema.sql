@@ -1,6 +1,7 @@
 create type public.user_role as enum ('admin', 'volunteer');
 create type public.request_status as enum ('unverified', 'unassigned', 'assigned', 'in_progress', 'completed');
 create type public.source_type as enum ('anonymous', 'admin', 'x_ai');
+create schema if not exists private;
 
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -52,6 +53,7 @@ create table public.assignments (
 alter table public.profiles enable row level security;
 alter table public.support_requests enable row level security;
 alter table public.assignments enable row level security;
+alter table private.request_details enable row level security;
 
 create policy "authenticated users read public requests"
   on public.support_requests for select to authenticated using (true);
@@ -59,6 +61,9 @@ create policy "volunteers read own profile"
   on public.profiles for select to authenticated using (auth.uid() = id);
 create policy "volunteers read own assignments"
   on public.assignments for select to authenticated using (auth.uid() = volunteer_id);
+
+revoke all on schema private from anon, authenticated;
+revoke all on private.request_details from anon, authenticated;
 
 -- private.request_details is intentionally excluded from browser grants.
 -- Anonymous intake must call a rate-limited server/Edge Function which splits

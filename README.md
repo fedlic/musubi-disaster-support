@@ -1,98 +1,94 @@
-# vinext-starter
+# むすび
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+令和8年熊本地震をきっかけに開発した、行政・災害ボランティア向けのオープンソース災害支援マッチングシステムです。
 
-## Prerequisites
+被災した方からの匿名支援要請、運営者による確認、ボランティアへの割当、対応状況の追跡を一つの地図上で扱います。SNSを置き換えるのではなく、散在する情報を行政や支援団体が判断できる形へ整える「共通作戦図」を目指しています。
 
-- Node.js `>=22.13.0`
+## 大切な注意
 
-## Quick Start
+- このリポジトリは熊本県、熊本市、気象庁その他の行政機関による公式サービスではありません。
+- 命に関わる緊急事態では本システムを使用せず、119または110へ通報してください。
+- 実運用には、自治体、社会福祉協議会、災害支援団体など、責任を持つ運用主体が必要です。
+- 個人情報を扱う前に、利用地域の法令、個人情報保護方針、保存期間、権限管理、インシデント対応を定めてください。
+- サンプルの管理者表示を、認証と権限設定なしで実運用しないでください。
+
+## 主な機能
+
+- アカウント不要の匿名支援要請
+- 受付番号による状況確認マイページ
+- 公開位置と正確な位置・連絡先の分離
+- 管理者と登録ボランティアの役割分離
+- 支援要請の確認、割当、対応履歴
+- MapLibreによる地図表示
+- AIで収集したSNS情報の「未確認」表示
+- モバイルファーストUI
+- 将来のPWA対応を想定したApp Router構成
+
+## 技術構成
+
+- Next.js App Router
+- TypeScript
+- Supabase Auth / PostgreSQL / Row Level Security
+- MapLibre GL JS
+- Tailwind CSS
+- Vercel
+
+## ローカル起動
+
+Node.js 22以降が必要です。
 
 ```bash
+git clone https://github.com/fedlic/musubi-disaster-support.git
+cd musubi-disaster-support
 npm install
+cp .env.example .env.local
 npm run dev
-npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+`http://localhost:3000` を開きます。
 
-## Included Shape
+## Supabaseの準備
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+1. Supabaseで新しいプロジェクトを作成します。
+2. SQL Editorで `supabase/schema.sql` を実行します。
+3. `.env.local` に以下を設定します。
 
-## Workspace Auth Headers
-
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+ADMIN_EMAIL_ALLOWLIST=
+INTAKE_HASH_SALT=
+X_API_BEARER_TOKEN=
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+`SUPABASE_SERVICE_ROLE_KEY` はサーバー環境だけに保存し、ブラウザやGitへ公開しないでください。
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+## Vercelへのデプロイ
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+1. このリポジトリを自分のGitHubアカウントへForkします。
+2. VercelでForkしたリポジトリをImportします。
+3. Supabaseの環境変数をVercelへ登録します。
+4. `main` ブランチをデプロイします。
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+## 別の災害・地域で使う
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+以下を地域の状況に合わせて変更してください。
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+- サービス名と対象災害名
+- 地図の中心座標
+- 公式情報へのリンク
+- 支援カテゴリと優先度
+- 運用主体と管理者メール
+- 個人情報の保存期間
+- ボランティア登録・本人確認手順
 
-## Useful Commands
+災害時に独立した非公式窓口を乱立させると、支援要請の分散や取りこぼしにつながります。可能な限り自治体、社会福祉協議会、災害支援団体と調整し、既存の公式窓口を補完する形で導入してください。
 
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+## 開発への参加
 
-## Learn More
+IssueとPull Requestを歓迎します。セキュリティや個人情報に関わる問題は、公開Issueへ実データを投稿せず、リポジトリ所有者へ非公開で連絡してください。
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+## ライセンス
+
+MIT Licenseです。誰でも利用、改変、再配布できます。詳細は `LICENSE` を参照してください。

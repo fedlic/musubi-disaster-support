@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
-import { Noto_Sans_JP } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
-
-const noto = Noto_Sans_JP({
-  variable: "--font-noto",
-  subsets: ["latin"],
-});
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const origin = `${protocol}://${host}`;
-  const title = "むすび｜行政災害支援マッチング";
-  const description = "行政の意思決定と地域の支援活動を、安全な情報設計でつなぐ災害支援プラットフォーム。";
+  const title = "むすび｜令和8年熊本地震 支援情報システム";
+  const description = "令和8年熊本地震における行政の意思決定と地域の支援活動を、安全な情報設計でつなぐ支援情報システム。";
   return {
     title,
     description,
@@ -32,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ja">
-      <body className={noto.variable}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

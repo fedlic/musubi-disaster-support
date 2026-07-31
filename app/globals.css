@@ -399,6 +399,41 @@ footer a { color: var(--green); text-decoration: none; font-weight: 800; }
 .audit-table article { display: grid; grid-template-columns: 150px 1fr 1fr 1.4fr; gap: 10px; padding: 10px; border-bottom: 1px solid var(--line); align-items: center; }
 .audit-table time, .audit-table small { color: var(--muted); font-size: 8px; }
 .audit-table strong, .audit-table span { font-size: 9px; overflow-wrap: anywhere; }
+.quick-manual { min-height: 100vh; padding: 24px; background: #e9efed; }
+.quick-actions { width: min(794px, 100%); display: flex; justify-content: flex-end; gap: 8px; margin: 0 auto 12px; }
+.quick-actions a, .quick-actions button { padding: 9px 13px; border: 1px solid var(--line); border-radius: 6px; color: var(--green); background: #fff; font-size: 11px; font-weight: 800; text-decoration: none; cursor: pointer; }
+.quick-sheet { width: 794px; min-height: 1123px; margin: auto; padding: 44px 48px 28px; background: #fff; box-shadow: 0 12px 40px #173a3322; color: var(--ink); }
+.quick-sheet header > div { display: flex; align-items: center; gap: 10px; }
+.quick-sheet header > div p { margin: 0; color: var(--green); font-size: 10px; font-weight: 900; }
+.quick-sheet header > .eyebrow { margin-top: 22px; }
+.quick-sheet h1 { margin: 5px 0 7px; color: var(--green-dark); font-family: serif; font-size: 31px; line-height: 1.2; }
+.quick-sheet header > p:last-child { margin: 0; color: var(--muted); font-size: 11px; }
+.quick-emergency { display: flex; gap: 14px; margin: 18px 0; padding: 12px 14px; border-left: 4px solid #c94036; background: #fff1f0; font-size: 10px; }
+.quick-emergency strong { flex: 0 0 auto; color: #a52219; }
+.quick-sheet section { margin-top: 18px; }
+.quick-sheet h2 { margin: 0 0 9px; color: var(--green-dark); font-size: 15px; }
+.quick-steps { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.quick-steps > div { position: relative; min-height: 104px; padding: 13px 13px 12px 46px; border: 1px solid var(--line); border-radius: 7px; background: #f6faf9; }
+.quick-steps b { position: absolute; left: 13px; top: 13px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: var(--green); font-size: 11px; }
+.quick-steps h3 { margin: 0 0 5px; font-size: 12px; }
+.quick-steps p, .quick-rules p, .quick-help p { margin: 0; color: #4f605d; font-size: 9.5px; line-height: 1.65; }
+.quick-rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.quick-rules > div { padding: 12px; border-top: 3px solid var(--green); background: #f2f5f4; }
+.quick-rules strong { display: block; margin-bottom: 5px; color: var(--green-dark); font-size: 11px; }
+.quick-help { padding: 12px 14px; border: 1px solid var(--line); }
+.quick-help h2 { font-size: 12px; }
+.quick-help p + p { margin-top: 5px; }
+.quick-sheet footer { margin-top: 19px; padding-top: 10px; border-top: 1px solid var(--line); color: var(--muted); font-size: 8px; text-align: center; }
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+  .quick-manual { padding: 0; background: #fff; }
+  .quick-actions { display: none; }
+  .quick-sheet { width: 210mm; min-height: 297mm; padding: 12mm 13mm 8mm; box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
+@media screen and (max-width: 840px) {
+  .quick-manual { padding: 10px; overflow-x: auto; }
+  .quick-sheet { transform-origin: top left; }
+}
 
 @media (max-width: 720px) {
   .auth-page { padding: 12px; }

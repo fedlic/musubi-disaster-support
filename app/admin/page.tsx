@@ -48,6 +48,7 @@ export default async function AdminPage() {
         </div>
         <form action="/auth/signout" method="post"><button className="admin-signout">ログアウト</button></form>
         <Link href="/manual/admin" className="admin-signout">管理マニュアル</Link>
+        <Link href="/manual/staff/quick" className="admin-signout">一枚マニュアル</Link>
       </header>
       <section className="admin-hero">
         <div><p className="eyebrow">COMMAND CENTER</p><h1>災害対応ダッシュボード</h1><p>{organization?.name} / {access.membership.title || staffRoleLabels[access.membership.role]}</p></div>

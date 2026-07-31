@@ -1,0 +1,8 @@
+.openai
+build
+db
+drizzle
+examples
+worker
+.wrangler
+.vinext

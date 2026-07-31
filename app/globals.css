@@ -380,6 +380,11 @@ footer a { color: var(--green); text-decoration: none; font-weight: 800; }
 .guide-list article { display: grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 22px; background: #fff; border: 1px solid var(--line); border-radius: 9px; }
 .guide-role { color: var(--green-dark); font-size: 13px; font-weight: 900; }
 .guide-list ol { margin: 0; padding-left: 20px; color: #52635f; font-size: 11px; line-height: 2; }
+.manual-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 18px; }
+.manual-links a { display: grid; grid-template-columns: 34px 1fr; gap: 2px 9px; padding: 15px; border: 1px solid #abc9c3; border-radius: 9px; background: #f3f9f7; color: var(--ink); text-decoration: none; }
+.manual-links a > span { grid-row: 1 / 3; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--green); color: #fff; font-size: 10px; font-weight: 900; }
+.manual-links strong { font-size: 11px; }
+.manual-links small { color: var(--muted); font-size: 8px; }
 .spec-list { margin: 0; border-top: 1px solid var(--line); }
 .spec-list div { display: grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 17px 0; border-bottom: 1px solid var(--line); }
 .spec-list dt { color: var(--green-dark); font-size: 11px; font-weight: 900; }
@@ -399,6 +404,41 @@ footer a { color: var(--green); text-decoration: none; font-weight: 800; }
   .about-number { font-size: 18px; }
   .principle-grid { grid-template-columns: 1fr; }
   .guide-list article { grid-template-columns: 1fr; gap: 10px; }
+  .manual-links { grid-template-columns: 1fr; }
   .spec-list div { grid-template-columns: 1fr; gap: 5px; }
   .about-footer { padding: 18px 16px; gap: 12px; }
+}
+
+.manual-page { min-height: 100vh; background: var(--paper); }
+.manual-hero { padding: 64px max(24px, calc((100vw - 900px) / 2)); color: #fff; background: var(--green-dark); }
+.manual-hero h1 { margin: 10px 0 14px; font-family: serif; font-size: clamp(32px, 6vw, 52px); }
+.manual-hero > p:not(.eyebrow) { max-width: 680px; margin: 0; color: #d0e0dc; font-size: 13px; line-height: 1.9; }
+.manual-emergency { max-width: 720px; display: flex; flex-direction: column; margin-top: 25px; padding: 14px 16px; border-left: 4px solid #ff6b5f; background: #ffffff10; }
+.manual-emergency strong { font-size: 12px; }
+.manual-emergency span { margin-top: 4px; color: #d0e0dc; font-size: 9px; }
+.manual-nav { width: min(900px, calc(100% - 40px)); display: flex; gap: 7px; margin: 20px auto; overflow-x: auto; }
+.manual-nav a { flex: 1 0 130px; padding: 10px; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink); font-size: 9px; text-decoration: none; }
+.manual-nav span { display: block; margin-bottom: 3px; color: var(--green); font-size: 8px; font-weight: 900; }
+.manual-content { width: min(900px, calc(100% - 40px)); margin: 0 auto 50px; border-top: 1px solid var(--line); }
+.manual-content > section { display: grid; grid-template-columns: 60px 1fr; gap: 22px; padding: 34px 0; border-bottom: 1px solid var(--line); scroll-margin-top: 20px; }
+.manual-step { color: #9baba8; font-family: serif; font-size: 24px; }
+.manual-content h2 { margin: 0 0 14px; font-family: serif; font-size: 24px; }
+.manual-content ol { margin: 0; padding-left: 22px; color: #455955; font-size: 11px; line-height: 2.1; }
+.manual-warning { margin: 14px 0 0; padding: 11px 13px; border-left: 3px solid var(--amber); background: #fff5e5; color: #675945; font-size: 10px; line-height: 1.7; }
+.manual-print { border: 0; background: transparent; color: var(--muted); font-size: 9px; }
+
+@media (max-width: 720px) {
+  .manual-hero { padding: 48px 18px; }
+  .manual-nav, .manual-content { width: calc(100% - 24px); }
+  .manual-content > section { grid-template-columns: 38px 1fr; gap: 8px; padding: 26px 0; }
+  .manual-step { font-size: 17px; }
+  .manual-content h2 { font-size: 20px; }
+}
+
+@media print {
+  .language-toggle, .about-header, .manual-nav, .about-footer { display: none !important; }
+  .manual-hero { padding: 20px 0; color: #000; background: #fff; }
+  .manual-hero > p:not(.eyebrow), .manual-emergency span { color: #333; }
+  .manual-content { width: 100%; }
+  .manual-content > section { break-inside: avoid; }
 }

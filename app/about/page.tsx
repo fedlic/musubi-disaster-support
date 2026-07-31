@@ -80,6 +80,12 @@ export default function AboutPage() {
               </ol>
             </article>
           </div>
+          <div className="manual-links">
+            <Link href="/manual/requester"><span>要</span><strong>支援要請者向けマニュアル</strong><small>匿名要請・受付番号・状況確認</small></Link>
+            <Link href="/manual/volunteer"><span>ボ</span><strong>ボランティア向けマニュアル</strong><small>活動前・現地活動・完了報告</small></Link>
+            <Link href="/manual/staff"><span>行</span><strong>行政担当者向けマニュアル</strong><small>確認・割当・個人情報・引き継ぎ</small></Link>
+            <Link href="/manual/admin"><span>管</span><strong>システム管理者向けマニュアル</strong><small>権限・監査・障害対応・復旧</small></Link>
+          </div>
         </div>
       </section>
 

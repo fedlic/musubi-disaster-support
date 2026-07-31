@@ -30,8 +30,10 @@ export default function MyPage() {
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("musubi-request-codes") || "[]") as string[];
-    setCodes(stored);
-    void loadRequests(stored);
+    queueMicrotask(() => {
+      setCodes(stored);
+      void loadRequests(stored);
+    });
   }, []);
 
   async function loadRequests(targetCodes: string[]) {
@@ -141,7 +143,7 @@ export default function MyPage() {
             <p className="eyebrow">VOLUNTEER</p>
             <h3>登録ボランティアの方</h3>
             <p>担当案件や活動履歴は、運営主体から発行されたアカウントで確認します。</p>
-            <button disabled>運営者の認証設定後に利用可能</button>
+            <Link className="primary volunteer-login" href="/login?next=/mypage">Googleでログイン</Link>
           </div>
           <div className="device-note">
             <strong>端末内だけに保存</strong>

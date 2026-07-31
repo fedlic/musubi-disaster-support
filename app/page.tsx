@@ -4,7 +4,6 @@ import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import MapPanel, { SupportPoint } from "./components/MapPanel";
 
-type Role = "admin" | "volunteer";
 type Filter = "all" | "urgent" | "unassigned" | "x";
 
 const initialPoints: SupportPoint[] = [
@@ -25,12 +24,10 @@ const initialPoints: SupportPoint[] = [
 ];
 
 export default function Home() {
-  const [role, setRole] = useState<Role>("admin");
   const [filter, setFilter] = useState<Filter>("all");
   const [selectedId, setSelectedId] = useState("REQ-042");
-  const [points, setPoints] = useState(initialPoints);
+  const [points] = useState(initialPoints);
   const [showRequest, setShowRequest] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
   const [notice, setNotice] = useState("");
 
   const visiblePoints = useMemo(
@@ -82,18 +79,6 @@ export default function Home() {
     }
   }
 
-  function assignSelected() {
-    setPoints((current) =>
-      current.map((point) =>
-        point.id === selected.id
-          ? { ...point, status: "割当済", assignee: role === "admin" ? "支援チームA" : "あなた" }
-          : point,
-      ),
-    );
-    setNotice(role === "admin" ? "支援チームAを割り当てました。" : "この支援に参加しました。");
-    window.setTimeout(() => setNotice(""), 3500);
-  }
-
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -106,11 +91,10 @@ export default function Home() {
         </div>
         <div className="header-actions">
           <span className="status-chip"><i /> 災害対応中</span>
-          <button className="role-button" onClick={() => setShowLogin(true)}>
-            <span className="avatar">{role === "admin" ? "管" : "ボ"}</span>
-            <span><small>ログイン中</small>{role === "admin" ? "災害対策本部" : "登録ボランティア"}</span>
-            <b>⌄</b>
-          </button>
+          <Link className="role-button login-link" href="/login">
+            <span className="avatar">G</span>
+            <span><small>安全な個人認証</small>Googleログイン</span>
+          </Link>
           <Link href="/mypage" className="mypage-link">マイページ</Link>
         </div>
       </header>
@@ -201,14 +185,7 @@ export default function Home() {
             <h3>状況</h3>
             <p>{selected.detail}</p>
           </div>
-          {role === "admin" && selected.kind === "request" ? (
-            <div className="private-box">
-              <div><span>🔒</span><div><small>管理者限定</small><strong>個人情報を含む詳細</strong></div></div>
-              <p>{selected.privateDetail || "公開投稿のため個人情報は保存されていません。"}</p>
-            </div>
-          ) : (
-            <div className="privacy-note">🔒 個人情報は災害対策本部のみ閲覧できます</div>
-          )}
+          <div className="privacy-note">🔒 個人情報は認可された災害対策担当者だけが管理画面で確認できます</div>
           {selected.kind === "official" && (
             <div className="official-note">
               <strong>公式発表</strong>
@@ -229,9 +206,9 @@ export default function Home() {
           </div>
           <div className="assignment">
             {selected.assignee && <p><span className="avatar small">支</span><span><small>担当</small><strong>{selected.assignee}</strong></span></p>}
-            <button className="primary" onClick={assignSelected} disabled={selected.kind !== "request"}>
-              {selected.kind !== "request" ? "支援要請のみ割当可能" : selected.assignee ? "担当を変更" : role === "admin" ? "ボランティアを割り当て" : "この支援に参加"}
-            </button>
+            <Link className="primary assignment-link" href={selected.kind === "request" ? "/login?next=/mypage" : "/admin"}>
+              {selected.kind === "request" ? "ログインして支援に参加" : "管理者画面で確認"}
+            </Link>
           </div>
         </aside>
       </section>
@@ -263,20 +240,6 @@ export default function Home() {
         </div>
       )}
 
-      {showLogin && (
-        <div className="modal-backdrop" role="presentation" onMouseDown={() => setShowLogin(false)}>
-          <div className="modal login-modal" onMouseDown={(event) => event.stopPropagation()}>
-            <div className="modal-head"><div><p className="eyebrow">DEMO ACCESS</p><h2>表示する役割を選択</h2></div><button onClick={() => setShowLogin(false)}>×</button></div>
-            <p className="form-intro">管理機能は正式な運用者によるSupabase Auth設定後に有効化されます。現在の役割切替は画面確認用です。</p>
-            <button className={role === "admin" ? "role-option active" : "role-option"} onClick={() => { setRole("admin"); setShowLogin(false); }}>
-              <span className="avatar">管</span><span><strong>災害対策本部</strong><small>個人情報の閲覧・要請の割当</small></span>
-            </button>
-            <button className={role === "volunteer" ? "role-option active" : "role-option"} onClick={() => { setRole("volunteer"); setShowLogin(false); }}>
-              <span className="avatar volunteer">ボ</span><span><strong>登録ボランティア</strong><small>公開情報の閲覧・支援への参加</small></span>
-            </button>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

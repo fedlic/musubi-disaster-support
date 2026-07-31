@@ -10,18 +10,20 @@
 - 命に関わる緊急事態では本システムを使用せず、119または110へ通報してください。
 - 実運用には、自治体、社会福祉協議会、災害支援団体など、責任を持つ運用主体が必要です。
 - 個人情報を扱う前に、利用地域の法令、個人情報保護方針、保存期間、権限管理、インシデント対応を定めてください。
-- サンプルの管理者表示を、認証と権限設定なしで実運用しないでください。
+- 管理者権限は担当者ごとに付与し、共有アカウントを使用しないでください。
 
 ## 主な機能
 
 - アカウント不要の匿名支援要請
 - 受付番号による状況確認マイページ
 - 公開位置と正確な位置・連絡先の分離
-- 管理者と登録ボランティアの役割分離
+- Googleログインによる個人アカウント認証
+- 行政組織・担当者ごとの役割分離と監査履歴
 - 支援要請の確認、割当、対応履歴
 - MapLibreによる地図表示
 - AIで収集したSNS情報の「未確認」表示
 - モバイルファーストUI
+- 端末言語を初期判定する日本語・英語表示切替
 - 将来のPWA対応を想定したApp Router構成
 
 ## 技術構成
@@ -55,6 +57,7 @@ npm run dev
 
 ```dotenv
 NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ADMIN_EMAIL_ALLOWLIST=
@@ -63,6 +66,23 @@ X_API_BEARER_TOKEN=
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY` はサーバー環境だけに保存し、ブラウザやGitへ公開しないでください。
+
+## Googleログインの準備
+
+1. Google Cloud Consoleでウェブアプリ用のOAuthクライアントを作成します。
+2. Supabase DashboardのAuthentication > Providers > GoogleへClient IDとClient Secretを登録します。
+3. Google側の承認済みリダイレクトURIへ、Supabase Dashboardに表示されるCallback URLを登録します。
+4. SupabaseのRedirect URLsへローカルと本番URLの `/auth/callback` を登録します。
+
+Googleで初めてログインした利用者は一般利用者として登録されます。管理画面を利用させる場合は、運営責任者が `organizations` と `staff_memberships` に所属・役割を登録してください。Googleのプロフィール情報から管理者権限を自己設定することはできません。
+
+担当者ロールは次の5種類です。
+
+- `super_admin`: システム全体の管理
+- `municipal_admin`: 自治体内の担当者・権限管理
+- `coordinator`: 支援調整と承認
+- `dispatcher`: ボランティア・車両等の割当
+- `viewer`: 閲覧のみ
 
 ## Vercelへのデプロイ
 

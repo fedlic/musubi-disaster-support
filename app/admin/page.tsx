@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getStaffAccess, staffRoleLabels } from "@/lib/auth/access";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import AdminDashboard from "./AdminDashboard";
 
 export default async function AdminPage() {
   if (!isSupabaseConfigured()) {
@@ -46,33 +47,17 @@ export default async function AdminPage() {
           <small>{organization?.name}・{staffRoleLabels[access.membership.role] || access.membership.role}</small>
         </div>
         <form action="/auth/signout" method="post"><button className="admin-signout">ログアウト</button></form>
+        <Link href="/manual/admin" className="admin-signout">管理マニュアル</Link>
       </header>
       <section className="admin-hero">
         <div><p className="eyebrow">COMMAND CENTER</p><h1>災害対応ダッシュボード</h1><p>{organization?.name} / {access.membership.title || staffRoleLabels[access.membership.role]}</p></div>
         <span className="status-chip"><i /> 対応中</span>
       </section>
-      <section className="admin-grid">
-        <article className="admin-stat"><small>未確認</small><strong>0</strong><span>本人確認・位置確認が必要</span></article>
-        <article className="admin-stat"><small>未割当</small><strong>0</strong><span>担当者の割当待ち</span></article>
-        <article className="admin-stat"><small>対応中</small><strong>0</strong><span>現在活動中の案件</span></article>
-        <article className="admin-stat"><small>完了</small><strong>0</strong><span>本日の対応完了</span></article>
-      </section>
-      <section className="admin-panels">
-        <article>
-          <div className="admin-panel-title"><div><p className="eyebrow">ASSIGNMENTS</p><h2>担当別の対応状況</h2></div><Link href="/admin/staff">担当者管理 →</Link></div>
-          <div className="empty-state"><span>担</span><h3>案件データの接続待ち</h3><p>担当者ごとの割当、進行状況、引き継ぎをここで管理します。</p></div>
-        </article>
-        <aside>
-          <p className="eyebrow">SECURITY</p>
-          <h2>このログインについて</h2>
-          <dl>
-            <div><dt>担当者</dt><dd>{String(access.user.user_metadata?.full_name || access.user.email)}</dd></div>
-            <div><dt>所属</dt><dd>{organization?.name}</dd></div>
-            <div><dt>権限</dt><dd>{staffRoleLabels[access.membership.role] || access.membership.role}</dd></div>
-          </dl>
-          <p className="security-note">詳細情報の閲覧・割当・更新は、担当者IDと時刻を監査履歴へ記録します。</p>
-        </aside>
-      </section>
+      <div className="admin-shortcuts">
+        <Link href="/admin/staff">担当者と権限を管理 →</Link>
+        <span>詳細情報の閲覧・割当・更新は担当者IDと時刻を監査履歴へ記録します。</span>
+      </div>
+      <AdminDashboard />
     </main>
   );
 }

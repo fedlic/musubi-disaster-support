@@ -39,7 +39,7 @@ export default function CivicInfoHub() {
         </div>
         <a href="tel:119"><small>火事・救急・救助</small><b>119</b></a>
         <a href="tel:110"><small>事件・事故</small><b>110</b></a>
-        <a href="https://www.pref.kumamoto.jp/site/bousai/" target="_blank" rel="noreferrer">
+        <a href="https://portal.bousai.pref.kumamoto.jp/?l=53-0" target="_blank" rel="noreferrer">
           <small>最も確実な情報</small><b>熊本県 公式</b>
         </a>
       </div>
@@ -62,8 +62,8 @@ export default function CivicInfoHub() {
       {expanded && (
         <div className="civic-details">
           <div className="lifeline-summary" id="lifelines">
-            <article><span>🚰 水道</span><strong>地域により状況が異なります</strong><a href="https://www.pref.kumamoto.jp/site/bousai/" target="_blank" rel="noreferrer">公式情報で確認 →</a></article>
-            <article><span>💡 電気</span><strong>停電情報を確認してください</strong><a href="https://www.kyuden.co.jp/td_teiden/" target="_blank" rel="noreferrer">九州電力送配電 →</a></article>
+            <article><span>🚰 水道</span><strong>地域により状況が異なります</strong><a href="https://portal.bousai.pref.kumamoto.jp/?l=53-0" target="_blank" rel="noreferrer">防災情報くまもと →</a></article>
+            <article><span>💡 電気</span><strong>停電情報を確認してください</strong><a href="https://customer.kyuden.co.jp/ja/electricity/power-outage.html" target="_blank" rel="noreferrer">九州電力 停電案内 →</a></article>
             <article><span>🚃 交通</span><strong>運休・通行止めに注意</strong><a href="https://www.jartic.or.jp/" target="_blank" rel="noreferrer">道路交通情報 →</a></article>
           </div>
           <div className="need-navigation">

@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "test:links": "node --test tests/external-links.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },

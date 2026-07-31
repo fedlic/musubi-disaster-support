@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import MapPanel, { SupportPoint } from "./components/MapPanel";
+import CivicInfoHub from "./components/CivicInfoHub";
 
 type Filter = "all" | "urgent" | "unassigned" | "x";
 
@@ -99,6 +100,8 @@ export default function Home() {
         </div>
       </header>
 
+      <CivicInfoHub />
+
       <section className="command-bar" aria-label="現在の災害状況">
         <div className="command-title">
           <span className="live-dot" />
@@ -113,7 +116,7 @@ export default function Home() {
         <button className="primary request-button" onClick={() => setShowRequest(true)}>＋ 支援を要請する</button>
       </section>
 
-      <section className="workspace">
+      <section className="workspace" id="support-map">
         <aside className="sidebar">
           <div className="section-heading">
             <div><p className="eyebrow">OPERATION FEED</p><h2>対応状況</h2></div>

@@ -30,6 +30,11 @@ export async function POST(request: NextRequest) {
     accepted_at: null,
   }, { onConflict: "organization_id,email" });
   if (error) return NextResponse.json({ error: "招待を登録できませんでした" }, { status: 500 });
+  const origin = request.nextUrl.origin;
+  const { error: mailError } = await supabase.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/admin`,
+    data: { invited_organization_id: access.membership.organization_id },
+  });
   await supabase.from("audit_logs").insert({
     organization_id: access.membership.organization_id,
     actor_user_id: access.user.id,
@@ -38,7 +43,7 @@ export async function POST(request: NextRequest) {
     resource_id: email,
     metadata: { role, title: title || null },
   });
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, mailSent: !mailError });
 }
 
 export async function PATCH(request: NextRequest) {

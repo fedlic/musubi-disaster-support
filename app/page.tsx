@@ -42,7 +42,7 @@ export default function Home() {
         public_detail: string; priority: string; status: string; created_at: string;
       }) => ({
         id: item.public_code,
-        kind: item.source === "x_ai" ? "x" : "request",
+        kind: item.source === "x_ai" ? "x" : item.public_code.startsWith("JMA-") ? "official" : "request",
         title: item.title,
         area: item.public_area,
         detail: item.public_detail,

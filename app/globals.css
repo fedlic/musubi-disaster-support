@@ -385,6 +385,16 @@ footer a { color: var(--green); text-decoration: none; font-weight: 800; }
 .case-attachments > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .case-attachments a { display: flex; flex-direction: column; gap: 4px; color: var(--muted); text-decoration: none; font-size: 8px; }
 .case-attachments img { width: 100%; height: 130px; object-fit: cover; border-radius: 6px; background: #e9efed; }
+.admin-location-map { width: 100%; height: 210px; margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.map-help { display: block; margin-top: 4px; color: var(--muted); font-size: 8px; }
+.case-comments { padding-top: 12px; border-top: 1px solid var(--line); }
+.case-comments article { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.case-comments article b, .case-comments article time { margin-right: 8px; font-size: 8px; }
+.case-comments article time { color: var(--muted); }
+.case-comments article p { margin: 3px 0 0; }
+.comment-entry { display: grid; grid-template-columns: 1fr auto; gap: 7px; margin-top: 9px; }
+.comment-entry textarea { padding: 9px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+.comment-entry button { padding: 8px 14px; border: 0; border-radius: 6px; color: #fff; background: var(--green); }
 .case-private { padding: 14px; border: 1px solid #a9c9c2; border-radius: 8px; background: #f0f7f5; }
 .case-private dl { grid-template-columns: repeat(3, 1fr); margin: 0; }
 .case-private dl div { background: #fff; }
@@ -404,6 +414,11 @@ footer a { color: var(--green); text-decoration: none; font-weight: 800; }
 .audit-table article { display: grid; grid-template-columns: 150px 1fr 1fr 1.4fr; gap: 10px; padding: 10px; border-bottom: 1px solid var(--line); align-items: center; }
 .audit-table time, .audit-table small { color: var(--muted); font-size: 8px; }
 .audit-table strong, .audit-table span { font-size: 9px; overflow-wrap: anywhere; }
+.admin-new-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.admin-new-form label { display: flex; flex-direction: column; gap: 5px; color: var(--muted); font-size: 9px; }
+.admin-new-form input, .admin-new-form select, .admin-new-form textarea { padding: 10px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+.admin-new-form .wide { grid-column: 1 / -1; }
+.admin-new-form button { grid-column: 1 / -1; padding: 12px; }
 .quick-manual { min-height: 100vh; padding: 24px; background: #e9efed; }
 .quick-actions { width: min(794px, 100%); display: flex; justify-content: flex-end; gap: 8px; margin: 0 auto 12px; }
 .quick-actions a, .quick-actions button { padding: 9px 13px; border: 1px solid var(--line); border-radius: 6px; color: var(--green); background: #fff; font-size: 11px; font-weight: 800; text-decoration: none; cursor: pointer; }

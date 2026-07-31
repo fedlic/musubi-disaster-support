@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 import LanguageToggle from "./components/LanguageToggle";
+import PwaRegister from "./components/PwaRegister";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -15,6 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description,
     icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
+    manifest: "/manifest.webmanifest",
     openGraph: {
       title,
       description,
@@ -30,6 +32,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="ja">
       <body>
         {children}
+        <PwaRegister />
         <LanguageToggle />
       </body>
     </html>

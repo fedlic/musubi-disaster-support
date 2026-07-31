@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { randomUUID } from "node:crypto";
 import { getStaffAccess } from "@/lib/auth/access";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { decryptPrivate, encryptPrivate } from "@/lib/security/private-data";
 
 const editableRoles = new Set(["super_admin", "municipal_admin", "coordinator", "dispatcher"]);
 const validStatuses = new Set(["unverified", "unassigned", "assigned", "in_progress", "completed"]);
@@ -55,11 +57,44 @@ export async function GET() {
 
   return NextResponse.json({
     requests: requests ?? [],
-    privateDetails: privateDetails ?? [],
+    privateDetails: (privateDetails ?? []).map((detail) => ({
+      ...detail,
+      contact_encrypted: decryptPrivate(detail.contact_encrypted),
+    })),
     assignments: assignments ?? [],
     staff: staff ?? [],
     canEdit: editableRoles.has(access.membership.role),
   });
+}
+
+export async function POST(request: NextRequest) {
+  const access = await authorized();
+  if (!access?.membership || !editableRoles.has(access.membership.role)) {
+    return NextResponse.json({ error: "登録権限がありません" }, { status: 403 });
+  }
+  const body = await request.json().catch(() => null);
+  const title = typeof body?.title === "string" ? body.title.trim().slice(0, 140) : "";
+  const area = typeof body?.area === "string" ? body.area.trim().slice(0, 120) : "";
+  const detail = typeof body?.detail === "string" ? body.detail.trim().slice(0, 1200) : "";
+  const category = typeof body?.category === "string" ? body.category.trim().slice(0, 30) : "その他";
+  const people = Number(body?.people);
+  if (!title || !area || !detail || !Number.isInteger(people) || people < 0 || people > 999) {
+    return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
+  }
+  const admin = createAdminClient();
+  const id = randomUUID();
+  const code = `KUM-${new Date().toISOString().slice(5, 10).replace("-", "")}-${id.slice(0, 6).toUpperCase()}`;
+  const { error } = await admin.from("support_requests").insert({
+    id, organization_id: access.membership.organization_id, public_code: code, source: "admin",
+    title, public_area: area, public_lat: Number(body?.lat) || 32.8031, public_lng: Number(body?.lng) || 130.7079,
+    category, people_count: people, public_detail: detail, priority: "normal", status: "unassigned", is_verified: true,
+  });
+  if (error) return NextResponse.json({ error: "案件を登録できませんでした" }, { status: 500 });
+  await admin.from("audit_logs").insert({
+    organization_id: access.membership.organization_id, actor_user_id: access.user.id,
+    action: "request.create", resource_type: "support_request", resource_id: id, metadata: { code },
+  });
+  return NextResponse.json({ ok: true, code }, { status: 201 });
 }
 
 export async function PATCH(request: NextRequest) {
@@ -77,6 +112,7 @@ export async function PATCH(request: NextRequest) {
   const publicArea = typeof body?.publicArea === "string" ? body.publicArea.trim().slice(0, 120) : "";
   const publicDetail = typeof body?.publicDetail === "string" ? body.publicDetail.trim().slice(0, 1200) : "";
   const exactAddress = typeof body?.exactAddress === "string" ? body.exactAddress.trim().slice(0, 240) : "";
+  const contact = typeof body?.contact === "string" ? body.contact.trim().slice(0, 240) : "";
   const publicLat = Number(body?.publicLat);
   const publicLng = Number(body?.publicLng);
   if (!requestId || !title || !publicArea || !publicDetail || !validStatuses.has(status) ||
@@ -115,6 +151,7 @@ export async function PATCH(request: NextRequest) {
 
   await supabase.schema("private").from("request_details").update({
     exact_address: exactAddress || null,
+    contact_encrypted: encryptPrivate(contact),
   }).eq("request_id", requestId);
 
   await supabase.from("assignments").delete().eq("request_id", requestId).eq("organization_id", organizationId);

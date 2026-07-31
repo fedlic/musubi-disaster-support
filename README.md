@@ -62,10 +62,19 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ADMIN_EMAIL_ALLOWLIST=
 INTAKE_HASH_SALT=
+PRIVATE_DATA_ENCRYPTION_KEY=
 X_API_BEARER_TOKEN=
+RESEND_API_KEY=
+ALERT_EMAIL_TO=
+ALERT_EMAIL_FROM=
+ADMIN_NOTIFICATION_WEBHOOK_URL=
+CRON_SECRET=
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY` はサーバー環境だけに保存し、ブラウザやGitへ公開しないでください。
+`PRIVATE_DATA_ENCRYPTION_KEY` は32文字以上のランダム値を推奨します。未設定時は移行互換のため
+`INTAKE_HASH_SALT` から暗号鍵を生成します。通知はResendの設定またはWebhook設定がある場合に有効になります。
+Xの自動収集はX API Bearer Tokenがある場合だけ実行し、収集内容は必ず未確認として登録します。
 
 ## Googleログインの準備
 

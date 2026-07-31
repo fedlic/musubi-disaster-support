@@ -22,7 +22,7 @@ export default function StaffManager({ initialStaff, canManage }: { initialStaff
       body: JSON.stringify({ email: form.get("email"), role: form.get("role"), title: form.get("title") }),
     });
     const data = await response.json();
-    setNotice(response.ok ? "招待を登録しました。対象者がGoogleログインすると権限が有効になります。" : data.error);
+    setNotice(response.ok ? (data.mailSent ? "招待メールを送信しました。" : "招待を登録しました。メール送信設定を確認してください。") : data.error);
     if (response.ok) event.currentTarget.reset();
   }
   async function update(member: Member, role: string, isActive: boolean) {

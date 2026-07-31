@@ -19,7 +19,8 @@ test("public external links respond successfully", async () => {
     const source = await readFile(file, "utf8");
     for (const match of source.matchAll(/https:\/\/[^"'`\s)]+/g)) {
       const url = match[0];
-      if (url.includes("{z}") || url.includes("app.local") || url.includes("supabase.co")) continue;
+      if (url.includes("{z}") || url.includes("app.local") || url.includes("supabase.co") ||
+          url.includes("api.x.com") || url.includes("api.resend.com")) continue;
       urls.add(url);
     }
   }

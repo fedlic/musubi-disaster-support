@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import LocationPicker from "./LocationPicker";
 
 type RequestItem = {
   id: string;
@@ -41,6 +42,10 @@ type Attachment = {
   id: string; original_name: string; content_type: string; size_bytes: number;
   created_at: string; url: string | null;
 };
+type Comment = {
+  id: number; actor_user_id: string; metadata: { text?: string }; created_at: string;
+  profiles: { display_name: string; email: string | null } | { display_name: string; email: string | null }[] | null;
+};
 
 const statusLabels: Record<string, string> = {
   unverified: "未確認",
@@ -69,6 +74,7 @@ export default function AdminDashboard() {
   const [notice, setNotice] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [attachmentsLoading, setAttachmentsLoading] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
 
   async function load() {
     setLoading(true);
@@ -105,6 +111,12 @@ export default function AdminDashboard() {
   const selected = requests.find((item) => item.id === selectedId) ?? visible[0];
   const privateDetail = details.find((item) => item.request_id === selected?.id);
   const assignment = assignments.find((item) => item.request_id === selected?.id);
+  const pickLocation = useCallback((lat: number, lng: number) => {
+    const latInput = document.querySelector<HTMLInputElement>("#admin-public-lat");
+    const lngInput = document.querySelector<HTMLInputElement>("#admin-public-lng");
+    if (latInput) latInput.value = String(lat);
+    if (lngInput) lngInput.value = String(lng);
+  }, []);
 
   useEffect(() => {
     if (!selected?.id) return;
@@ -121,6 +133,9 @@ export default function AdminDashboard() {
         })
         .catch(() => active && setNotice("添付写真を取得できませんでした"))
         .finally(() => active && setAttachmentsLoading(false));
+      fetch(`/api/admin/requests/${selected.id}/comments`, { cache: "no-store" })
+        .then((response) => response.json()).then((data) => active && setComments(data.comments || []))
+        .catch(() => undefined);
     });
     return () => { active = false; };
   }, [selected?.id]);
@@ -143,6 +158,7 @@ export default function AdminDashboard() {
         publicLat: Number(form.get("publicLat")),
         publicLng: Number(form.get("publicLng")),
         exactAddress: form.get("exactAddress"),
+        contact: form.get("contact"),
       }),
     });
     const data = await response.json();
@@ -195,9 +211,10 @@ export default function AdminDashboard() {
               <label>公開タイトル<input name="title" defaultValue={selected.title} disabled={!canEdit} required /></label>
               <label>公開地域<input name="publicArea" defaultValue={selected.public_area} disabled={!canEdit} required /></label>
               <label className="wide">公開する状況<textarea name="publicDetail" defaultValue={selected.public_detail} rows={3} disabled={!canEdit} required /></label>
-              <label>公開緯度<input name="publicLat" type="number" step="0.000001" defaultValue={selected.public_lat} disabled={!canEdit} required /></label>
-              <label>公開経度<input name="publicLng" type="number" step="0.000001" defaultValue={selected.public_lng} disabled={!canEdit} required /></label>
+              <label>公開緯度<input id="admin-public-lat" name="publicLat" type="number" step="0.000001" defaultValue={selected.public_lat} disabled={!canEdit} required /></label>
+              <label>公開経度<input id="admin-public-lng" name="publicLng" type="number" step="0.000001" defaultValue={selected.public_lng} disabled={!canEdit} required /></label>
             </div>
+            {canEdit && <><LocationPicker lat={selected.public_lat} lng={selected.public_lng} onPick={pickLocation} /><small className="map-help">地図をクリックすると公開緯度・経度へ反映されます。</small></>}
             <dl>
               <div><dt>公開地域</dt><dd>{selected.public_area}</dd></div>
               <div><dt>支援種別</dt><dd>{selected.category}</dd></div>
@@ -220,9 +237,23 @@ export default function AdminDashboard() {
               <h3>🔒 認可担当者限定</h3>
               <dl>
                 <div><dt>氏名</dt><dd>{privateDetail?.requester_name || "未入力"}</dd></div>
-                <div><dt>連絡先</dt><dd>{privateDetail?.contact_encrypted || "未入力"}</dd></div>
+                <div><dt>連絡先</dt><dd><input name="contact" defaultValue={privateDetail?.contact_encrypted || ""} placeholder="管理者だけが閲覧できます" disabled={!canEdit} /></dd></div>
                 <div><dt>正確な住所</dt><dd><input name="exactAddress" defaultValue={privateDetail?.exact_address || ""} placeholder="管理者だけが閲覧できます" disabled={!canEdit} /></dd></div>
               </dl>
+            </section>
+            <section className="case-comments">
+              <h3>対応コメント・引き継ぎ</h3>
+              <div>{comments.map((comment) => {
+                const profile = Array.isArray(comment.profiles) ? comment.profiles[0] : comment.profiles;
+                return <article key={comment.id}><b>{profile?.display_name || profile?.email || "担当者"}</b><time>{new Date(comment.created_at).toLocaleString("ja-JP")}</time><p>{comment.metadata.text}</p></article>;
+              })}</div>
+              {canEdit && <div className="comment-entry"><textarea id="case-comment" rows={2} placeholder="確認結果や次の担当者への引き継ぎを入力" /><button type="button" onClick={async () => {
+                const input = document.querySelector<HTMLTextAreaElement>("#case-comment");
+                if (!input?.value.trim()) return;
+                const response = await fetch(`/api/admin/requests/${selected.id}/comments`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: input.value }) });
+                setNotice(response.ok ? "コメントを記録しました" : "コメントを保存できませんでした");
+                if (response.ok) { input.value = ""; const refreshed = await fetch(`/api/admin/requests/${selected.id}/comments`).then((r) => r.json()); setComments(refreshed.comments || []); }
+              }}>記録</button></div>}
             </section>
             <div className="case-controls">
               <label>優先度<select name="priority" defaultValue={selected.priority} disabled={!canEdit}>

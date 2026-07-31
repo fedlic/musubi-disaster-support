@@ -55,8 +55,10 @@ export default async function AdminPage() {
         <span className="status-chip"><i /> 対応中</span>
       </section>
       <div className="admin-shortcuts">
+        <Link href="/admin/new">＋ 管理者から案件登録 →</Link>
         <Link href="/admin/staff">担当者と権限を管理 →</Link>
         {["super_admin", "municipal_admin"].includes(access.membership.role) && <Link href="/admin/audit">監査履歴を見る →</Link>}
+        <a href="/api/admin/export">CSVを出力 →</a>
         <span>詳細情報の閲覧・割当・更新は担当者IDと時刻を監査履歴へ記録します。</span>
       </div>
       <AdminDashboard />

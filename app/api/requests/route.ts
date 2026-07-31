@@ -1,6 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { createHash, createHmac, randomUUID } from "node:crypto";
+import { encryptPrivate } from "@/lib/security/private-data";
+import { allowRequest } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -79,6 +81,10 @@ export async function POST(request: NextRequest) {
   if (!body || body.website) {
     return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
   }
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (!allowRequest(`intake:${forwarded}`)) {
+    return NextResponse.json({ error: "短時間の送信回数が上限に達しました。10分後に再度お試しください。" }, { status: 429 });
+  }
 
   const area = clean(body.area, 120);
   const category = clean(body.category, 30);
@@ -101,7 +107,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "必須項目または入力形式を確認してください" }, { status: 400 });
   }
 
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const requestFingerprint = createHash("sha256")
     .update(`${forwarded}:${request.headers.get("user-agent") ?? ""}:${process.env.INTAKE_HASH_SALT ?? "musubi"}`)
     .digest("hex");
@@ -135,7 +140,7 @@ export async function POST(request: NextRequest) {
   const { error: privateError } = await supabase.schema("private").from("request_details").insert({
     request_id: requestId,
     requester_name: null,
-    contact_encrypted: contact || null,
+    contact_encrypted: encryptPrivate(contact),
     sensitive_notes: `受付端末識別子:${requestFingerprint}`,
     consent_at: new Date().toISOString(),
   });
@@ -144,6 +149,27 @@ export async function POST(request: NextRequest) {
     await supabase.from("support_requests").delete().eq("id", requestId);
     console.error("private request_details insert failed", privateError.code);
     return NextResponse.json({ error: "個人情報の安全な保存に失敗したため、要請は登録されませんでした。" }, { status: 500 });
+  }
+
+  const webhook = process.env.ADMIN_NOTIFICATION_WEBHOOK_URL;
+  if (webhook) {
+    void fetch(webhook, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event: "support_request.created", code, title: summary, area, category, people }),
+    }).catch(() => undefined);
+  }
+  const resendKey = process.env.RESEND_API_KEY;
+  const alertTo = process.env.ALERT_EMAIL_TO;
+  if (resendKey && alertTo) {
+    void fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: process.env.ALERT_EMAIL_FROM || "むすび <onboarding@resend.dev>",
+        to: [alertTo], subject: `[むすび] 新しい支援要請 ${code}`,
+        text: `受付番号: ${code}\n地域: ${area}\n種類: ${category}\n人数: ${people}\n要約: ${summary}\n\n管理画面で確認してください。`,
+      }),
+    }).catch(() => undefined);
   }
 
   return NextResponse.json({ ok: true, code, uploadToken: attachmentToken(requestId) }, { status: 201 });

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 type RequestItem = {
@@ -36,6 +37,10 @@ type Staff = {
   profiles: { display_name: string; email: string | null } | { display_name: string; email: string | null }[] | null;
 };
 type Assignment = { request_id: string; volunteer_id: string };
+type Attachment = {
+  id: string; original_name: string; content_type: string; size_bytes: number;
+  created_at: string; url: string | null;
+};
 
 const statusLabels: Record<string, string> = {
   unverified: "未確認",
@@ -62,6 +67,8 @@ export default function AdminDashboard() {
   const [canEdit, setCanEdit] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [attachmentsLoading, setAttachmentsLoading] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -98,6 +105,25 @@ export default function AdminDashboard() {
   const selected = requests.find((item) => item.id === selectedId) ?? visible[0];
   const privateDetail = details.find((item) => item.request_id === selected?.id);
   const assignment = assignments.find((item) => item.request_id === selected?.id);
+
+  useEffect(() => {
+    if (!selected?.id) return;
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      setAttachmentsLoading(true);
+      fetch(`/api/admin/requests/${selected.id}/attachments`, { cache: "no-store" })
+        .then(async (response) => ({ response, data: await response.json() }))
+        .then(({ response, data }) => {
+          if (!active) return;
+          setAttachments(response.ok ? data.attachments : []);
+          if (!response.ok) setNotice(data.error || "添付写真を取得できませんでした");
+        })
+        .catch(() => active && setNotice("添付写真を取得できませんでした"))
+        .finally(() => active && setAttachmentsLoading(false));
+    });
+    return () => { active = false; };
+  }, [selected?.id]);
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -179,6 +205,17 @@ export default function AdminDashboard() {
               <div><dt>情報源</dt><dd>{selected.source}</dd></div>
             </dl>
             <section><h3>申告された状況</h3><p>{selected.public_detail}</p></section>
+            <section className="case-attachments">
+              <h3>🔒 添付された現地写真</h3>
+              {attachmentsLoading ? <p>写真を安全に読み込んでいます…</p> : attachments.length ? (
+                <div>{attachments.map((item) => item.url && (
+                  <a href={item.url} target="_blank" rel="noreferrer" key={item.id}>
+                    <Image src={item.url} alt={item.original_name || "現地写真"} width={240} height={160} unoptimized />
+                    <small>{item.original_name}・{Math.ceil(item.size_bytes / 1024)}KB</small>
+                  </a>
+                ))}</div>
+              ) : <p>添付写真はありません。</p>}
+            </section>
             <section className="case-private">
               <h3>🔒 認可担当者限定</h3>
               <dl>

@@ -100,6 +100,7 @@ create table public.assignments (
   completed_at timestamptz
 );
 
+
 alter table public.profiles enable row level security;
 alter table public.organizations enable row level security;
 alter table public.staff_memberships enable row level security;
@@ -146,6 +147,12 @@ create policy "volunteers read own assignments"
 
 revoke all on schema private from anon, authenticated;
 revoke all on private.request_details from anon, authenticated;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('request-attachments', 'request-attachments', false, 8388608,
+  array['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'])
+on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
 
 create or replace function public.handle_new_user()
 returns trigger

@@ -99,13 +99,30 @@ export default function Home() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "送信できませんでした");
+      const photos = form.getAll("photos").filter((item): item is File => item instanceof File && item.size > 0);
+      let photoNotice = "";
+      if (photos.length) {
+        const photoForm = new FormData();
+        photos.forEach((photo) => photoForm.append("photos", photo));
+        const photoResponse = await fetch(`/api/requests/${encodeURIComponent(result.code)}/attachments`, {
+          method: "POST",
+          headers: { "x-upload-token": result.uploadToken },
+          body: photoForm,
+        });
+        if (!photoResponse.ok) {
+          const photoResult = await photoResponse.json();
+          photoNotice = ` 写真は保存できませんでした：${photoResult.error}`;
+        } else {
+          photoNotice = ` 写真${photos.length}枚も安全に保存しました。`;
+        }
+      }
       const storedCodes = JSON.parse(localStorage.getItem("musubi-request-codes") || "[]") as string[];
       localStorage.setItem(
         "musubi-request-codes",
         JSON.stringify(Array.from(new Set([result.code, ...storedCodes]))),
       );
       setShowRequest(false);
-      setNotice(`支援要請を受け付けました。受付番号: ${result.code}`);
+      setNotice(`支援要請を受け付けました。受付番号: ${result.code}${photoNotice}`);
       await loadPoints();
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "送信できませんでした");
@@ -272,6 +289,10 @@ export default function Home() {
             <label>要請の要約<input name="summary" required placeholder="例：高齢者世帯に飲料水が必要" /></label>
             <label>詳しい状況<textarea name="detail" required rows={3} placeholder="危険箇所、必要な物、移動できるか等" /></label>
             <label>連絡方法（任意・非公開）<input name="contact" placeholder="電話番号または連絡不要" /></label>
+            <label>現地写真（任意・非公開）
+              <input name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple />
+              <small>管理担当者だけが閲覧できます。最大3枚、1枚8MBまで。</small>
+            </label>
             <label className="consent"><input name="consent" type="checkbox" required /> 内容を認可された運営者が確認し、支援調整に利用することに同意します</label>
             <button className="primary submit" type="submit">安全に要請を送信</button>
           </form>

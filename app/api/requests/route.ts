@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomUUID } from "node:crypto";
 
 export const runtime = "nodejs";
 
@@ -33,6 +33,12 @@ function publicCode() {
   return `KUM-${new Date().toISOString().slice(5, 10).replace("-", "")}-${randomUUID()
     .slice(0, 6)
     .toUpperCase()}`;
+}
+
+function attachmentToken(requestId: string) {
+  return createHmac("sha256", process.env.INTAKE_HASH_SALT ?? "musubi")
+    .update(`attachment:${requestId}`)
+    .digest("hex");
 }
 
 export async function GET() {
@@ -140,5 +146,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "個人情報の安全な保存に失敗したため、要請は登録されませんでした。" }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, code }, { status: 201 });
+  return NextResponse.json({ ok: true, code, uploadToken: attachmentToken(requestId) }, { status: 201 });
 }

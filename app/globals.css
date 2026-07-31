@@ -180,6 +180,7 @@ footer a { color: var(--green); text-decoration: none; font-weight: 800; }
 .modal-head button { font-size: 17px; }
 .form-intro { padding: 11px; background: #f0f6f4; color: #5b6b68; font-size: 10px; line-height: 1.65; border-radius: 6px; }
 .modal label { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; color: #344845; font-size: 10px; font-weight: 700; }
+.modal label > small { color: var(--muted); font-size: 8px; font-weight: 500; }
 .modal input, .modal select, .modal textarea { width: 100%; border: 1px solid #ced9d6; border-radius: 6px; padding: 10px 11px; outline: none; background: #fff; font-size: 11px; }
 .modal input:focus, .modal select:focus, .modal textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px #0c665c18; }
 .honeypot { position: absolute !important; width: 1px !important; height: 1px !important; opacity: 0 !important; pointer-events: none !important; }
@@ -380,6 +381,10 @@ footer a { color: var(--green); text-decoration: none; font-weight: 800; }
 .case-detail section { margin: 14px 0; }
 .case-detail section h3 { margin: 0 0 7px; font-size: 10px; }
 .case-detail section p { color: #4f605d; font-size: 10px; line-height: 1.8; }
+.case-attachments { padding: 13px; border: 1px solid var(--line); border-radius: 8px; background: #fafcfc; }
+.case-attachments > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.case-attachments a { display: flex; flex-direction: column; gap: 4px; color: var(--muted); text-decoration: none; font-size: 8px; }
+.case-attachments img { width: 100%; height: 130px; object-fit: cover; border-radius: 6px; background: #e9efed; }
 .case-private { padding: 14px; border: 1px solid #a9c9c2; border-radius: 8px; background: #f0f7f5; }
 .case-private dl { grid-template-columns: repeat(3, 1fr); margin: 0; }
 .case-private dl div { background: #fff; }
@@ -456,6 +461,7 @@ footer a { color: var(--green); text-decoration: none; font-weight: 800; }
   .case-list { max-height: 320px; border-right: 0; border-bottom: 1px solid var(--line); }
   .case-detail > dl { grid-template-columns: 1fr 1fr; }
   .case-private dl, .case-controls { grid-template-columns: 1fr; }
+  .case-attachments > div { grid-template-columns: 1fr 1fr; }
   .case-edit-fields { grid-template-columns: 1fr; }
   .case-edit-fields .wide { grid-column: auto; }
   .audit-table article { grid-template-columns: 1fr 1fr; }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import MapPanel, { SupportPoint } from "./components/MapPanel";
 import CivicInfoHub from "./components/CivicInfoHub";
 
@@ -27,9 +27,43 @@ const initialPoints: SupportPoint[] = [
 export default function Home() {
   const [filter, setFilter] = useState<Filter>("all");
   const [selectedId, setSelectedId] = useState("REQ-042");
-  const [points] = useState(initialPoints);
+  const [points, setPoints] = useState(initialPoints);
   const [showRequest, setShowRequest] = useState(false);
   const [notice, setNotice] = useState("");
+
+  const loadPoints = useCallback(async () => {
+    try {
+      const response = await fetch("/api/requests", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok || !Array.isArray(data.requests)) return;
+      const requestPoints: SupportPoint[] = data.requests.map((item: {
+        public_code: string; source: string; title: string; public_area: string;
+        public_lat: number; public_lng: number; category: string; people_count: number;
+        public_detail: string; priority: string; status: string; created_at: string;
+      }) => ({
+        id: item.public_code,
+        kind: item.source === "x_ai" ? "x" : "request",
+        title: item.title,
+        area: item.public_area,
+        detail: item.public_detail,
+        need: item.category,
+        people: item.people_count,
+        priority: ({ urgent: "緊急", priority: "優先", normal: "通常", unverified: "未確認" } as Record<string, string>)[item.priority] || "未確認",
+        status: ({ unverified: "未確認", unassigned: "未割当", assigned: "割当済", in_progress: "対応中", completed: "完了" } as Record<string, string>)[item.status] || item.status,
+        lat: item.public_lat,
+        lng: item.public_lng,
+        time: new Date(item.created_at).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+      }));
+      setPoints([...initialPoints, ...requestPoints]);
+      setSelectedId((current) => current === "REQ-042" ? requestPoints[0]?.id || initialPoints[0].id : current);
+    } catch {
+      setNotice("最新情報を取得できませんでした。時間をおいて更新してください。");
+    }
+  }, []);
+
+  useEffect(() => {
+    queueMicrotask(() => void loadPoints());
+  }, [loadPoints]);
 
   const visiblePoints = useMemo(
     () =>
@@ -72,6 +106,7 @@ export default function Home() {
       );
       setShowRequest(false);
       setNotice(`支援要請を受け付けました。受付番号: ${result.code}`);
+      await loadPoints();
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "送信できませんでした");
     } finally {
@@ -120,7 +155,7 @@ export default function Home() {
         <aside className="sidebar">
           <div className="section-heading">
             <div><p className="eyebrow">OPERATION FEED</p><h2>対応状況</h2></div>
-            <button aria-label="一覧を更新">↻</button>
+            <button aria-label="一覧を更新" onClick={() => void loadPoints()}>↻</button>
           </div>
           <div className="filters" role="group" aria-label="要請の絞り込み">
             {[

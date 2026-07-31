@@ -20,7 +20,7 @@ export async function GET() {
   const [{ data: requests, error }, { data: staff }, { data: assignments }] = await Promise.all([
     supabase
       .from("support_requests")
-      .select("id,public_code,source,title,public_area,category,people_count,public_detail,priority,status,is_verified,created_at,updated_at")
+      .select("id,public_code,source,title,public_area,public_lat,public_lng,category,people_count,public_detail,priority,status,is_verified,created_at,updated_at")
       .or(`organization_id.eq.${organizationId},organization_id.is.null`)
       .order("created_at", { ascending: false })
       .limit(250),
@@ -41,7 +41,7 @@ export async function GET() {
     ? await supabase
         .schema("private")
         .from("request_details")
-        .select("request_id,exact_address,requester_name,contact_encrypted,sensitive_notes,consent_at")
+        .select("request_id,exact_address,exact_lat,exact_lng,requester_name,contact_encrypted,sensitive_notes,consent_at")
         .in("request_id", ids)
     : { data: [] };
 
@@ -73,7 +73,15 @@ export async function PATCH(request: NextRequest) {
   const status = typeof body?.status === "string" ? body.status : "";
   const priority = typeof body?.priority === "string" ? body.priority : "";
   const assigneeId = typeof body?.assigneeId === "string" ? body.assigneeId : "";
-  if (!requestId || !validStatuses.has(status) || !validPriorities.has(priority)) {
+  const title = typeof body?.title === "string" ? body.title.trim().slice(0, 140) : "";
+  const publicArea = typeof body?.publicArea === "string" ? body.publicArea.trim().slice(0, 120) : "";
+  const publicDetail = typeof body?.publicDetail === "string" ? body.publicDetail.trim().slice(0, 1200) : "";
+  const exactAddress = typeof body?.exactAddress === "string" ? body.exactAddress.trim().slice(0, 240) : "";
+  const publicLat = Number(body?.publicLat);
+  const publicLng = Number(body?.publicLng);
+  if (!requestId || !title || !publicArea || !publicDetail || !validStatuses.has(status) ||
+      !validPriorities.has(priority) || !Number.isFinite(publicLat) || !Number.isFinite(publicLng) ||
+      publicLat < 30 || publicLat > 35 || publicLng < 127 || publicLng > 133) {
     return NextResponse.json({ error: "更新内容が正しくありません" }, { status: 400 });
   }
 
@@ -92,6 +100,11 @@ export async function PATCH(request: NextRequest) {
     .from("support_requests")
     .update({
       organization_id: organizationId,
+      title,
+      public_area: publicArea,
+      public_detail: publicDetail,
+      public_lat: publicLat,
+      public_lng: publicLng,
       status,
       priority,
       is_verified: status !== "unverified",
@@ -99,6 +112,10 @@ export async function PATCH(request: NextRequest) {
     })
     .eq("id", requestId);
   if (error) return NextResponse.json({ error: "案件を更新できませんでした" }, { status: 500 });
+
+  await supabase.schema("private").from("request_details").update({
+    exact_address: exactAddress || null,
+  }).eq("request_id", requestId);
 
   await supabase.from("assignments").delete().eq("request_id", requestId).eq("organization_id", organizationId);
   if (assigneeId) {
@@ -125,7 +142,7 @@ export async function PATCH(request: NextRequest) {
     action: "request.update",
     resource_type: "support_request",
     resource_id: requestId,
-    metadata: { status, priority, assignee_id: assigneeId || null },
+    metadata: { status, priority, assignee_id: assigneeId || null, public_area: publicArea },
   });
   return NextResponse.json({ ok: true });
 }

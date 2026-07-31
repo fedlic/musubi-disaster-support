@@ -143,7 +143,7 @@ export default function MyPage() {
             <p className="eyebrow">VOLUNTEER</p>
             <h3>登録ボランティアの方</h3>
             <p>担当案件や活動履歴は、運営主体から発行されたアカウントで確認します。</p>
-            <Link className="primary volunteer-login" href="/login?next=/mypage">Googleでログイン</Link>
+            <Link className="primary volunteer-login" href="/login?next=/volunteer">Googleでログイン</Link>
           </div>
           <div className="device-note">
             <strong>端末内だけに保存</strong>

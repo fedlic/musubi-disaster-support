@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
@@ -16,5 +17,21 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) return NextResponse.redirect(`${origin}/login?error=oauth`);
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData.user;
+  if (user?.email) {
+    const admin = createAdminClient();
+    const { data: invitation } = await admin.from("staff_invitations")
+      .select("id,organization_id,role,title")
+      .eq("email", user.email.toLowerCase()).is("accepted_at", null)
+      .gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (invitation) {
+      await admin.from("staff_memberships").upsert({
+        organization_id: invitation.organization_id, user_id: user.id,
+        role: invitation.role, title: invitation.title, is_active: true, approved_at: new Date().toISOString(),
+      }, { onConflict: "organization_id,user_id" });
+      await admin.from("staff_invitations").update({ accepted_at: new Date().toISOString() }).eq("id", invitation.id);
+    }
+  }
   return NextResponse.redirect(`${origin}${nextPath}`);
 }

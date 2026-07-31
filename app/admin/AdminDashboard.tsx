@@ -8,6 +8,8 @@ type RequestItem = {
   source: string;
   title: string;
   public_area: string;
+  public_lat: number;
+  public_lng: number;
   category: string;
   people_count: number;
   public_detail: string;
@@ -20,6 +22,8 @@ type RequestItem = {
 type PrivateDetail = {
   request_id: string;
   exact_address: string | null;
+  exact_lat: number | null;
+  exact_lng: number | null;
   requester_name: string | null;
   contact_encrypted: string | null;
   sensitive_notes: string | null;
@@ -107,6 +111,12 @@ export default function AdminDashboard() {
         status: form.get("status"),
         priority: form.get("priority"),
         assigneeId: form.get("assignee"),
+        title: form.get("title"),
+        publicArea: form.get("publicArea"),
+        publicDetail: form.get("publicDetail"),
+        publicLat: Number(form.get("publicLat")),
+        publicLng: Number(form.get("publicLng")),
+        exactAddress: form.get("exactAddress"),
       }),
     });
     const data = await response.json();
@@ -155,6 +165,13 @@ export default function AdminDashboard() {
         {selected ? (
           <form className="case-detail" onSubmit={save} key={`${selected.id}-${selected.updated_at}`}>
             <div className="case-detail-head"><div><p>{selected.public_code}</p><h2>{selected.title}</h2></div><span>{statusLabels[selected.status]}</span></div>
+            <div className="case-edit-fields">
+              <label>公開タイトル<input name="title" defaultValue={selected.title} disabled={!canEdit} required /></label>
+              <label>公開地域<input name="publicArea" defaultValue={selected.public_area} disabled={!canEdit} required /></label>
+              <label className="wide">公開する状況<textarea name="publicDetail" defaultValue={selected.public_detail} rows={3} disabled={!canEdit} required /></label>
+              <label>公開緯度<input name="publicLat" type="number" step="0.000001" defaultValue={selected.public_lat} disabled={!canEdit} required /></label>
+              <label>公開経度<input name="publicLng" type="number" step="0.000001" defaultValue={selected.public_lng} disabled={!canEdit} required /></label>
+            </div>
             <dl>
               <div><dt>公開地域</dt><dd>{selected.public_area}</dd></div>
               <div><dt>支援種別</dt><dd>{selected.category}</dd></div>
@@ -167,7 +184,7 @@ export default function AdminDashboard() {
               <dl>
                 <div><dt>氏名</dt><dd>{privateDetail?.requester_name || "未入力"}</dd></div>
                 <div><dt>連絡先</dt><dd>{privateDetail?.contact_encrypted || "未入力"}</dd></div>
-                <div><dt>正確な住所</dt><dd>{privateDetail?.exact_address || "確認待ち"}</dd></div>
+                <div><dt>正確な住所</dt><dd><input name="exactAddress" defaultValue={privateDetail?.exact_address || ""} placeholder="管理者だけが閲覧できます" disabled={!canEdit} /></dd></div>
               </dl>
             </section>
             <div className="case-controls">

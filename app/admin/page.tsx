@@ -55,6 +55,7 @@ export default async function AdminPage() {
       </section>
       <div className="admin-shortcuts">
         <Link href="/admin/staff">担当者と権限を管理 →</Link>
+        {["super_admin", "municipal_admin"].includes(access.membership.role) && <Link href="/admin/audit">監査履歴を見る →</Link>}
         <span>詳細情報の閲覧・割当・更新は担当者IDと時刻を監査履歴へ記録します。</span>
       </div>
       <AdminDashboard />

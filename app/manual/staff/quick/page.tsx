@@ -42,7 +42,7 @@ export default function StaffQuickManual() {
         </section>
         <section className="quick-help">
           <h2>困ったとき</h2>
-          <p><b>担当者・権限：</b>/admin/staff　<b>監査履歴：</b>/admin/audit　<b>詳細：</b>/manual/staff</p>
+          <p><b>担当者・権限：</b>/admin/staff <b>監査履歴：</b>/admin/audit <b>詳細：</b>/manual/staff</p>
           <p>障害時は組織で定めた電話・紙台帳等へ切り替え、復旧後に記録を反映してください。</p>
         </section>
         <footer>非公式サービス｜個人情報は認可された災害対応担当者のみ閲覧可｜緊急時 119・110</footer>

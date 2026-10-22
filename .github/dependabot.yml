@@ -9,4 +9,13 @@ updates:
       maintenance:
         patterns:
           - "*"
+    # typescript-eslint does not yet accept ESLint 10. Resume major updates
+    # once the surrounding lint toolchain supports it.
+    ignore:
+      - dependency-name: "eslint"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "@eslint/js"
+        update-types:
+          - "version-update:semver-major"
 
